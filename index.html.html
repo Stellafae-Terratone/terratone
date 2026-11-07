@@ -1,0 +1,4877 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TerraTone | Earth Jukebox</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 25px 0;
+    background: #081426;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.container {
+    width: 96%;
+    max-width: 1450px;
+    margin: auto;
+    background: #13243c;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 35px #00000055;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+h1 {
+    color: #72c8ff;
+    font-size: 38px;
+    margin-bottom: 5px;
+}
+
+h2 {
+    font-size: 19px;
+}
+
+.tagline {
+    color: #a9bdd3;
+}
+
+.card {
+    background: #203957;
+    padding: 20px;
+    border-radius: 14px;
+    margin: 18px 0;
+}
+
+.visual-area {
+    text-align: center;
+    background: #0c1d32;
+    padding: 25px 15px;
+    border-radius: 15px;
+}
+
+.globe {
+    width: 145px;
+    height: 145px;
+    margin: 20px auto;
+    border-radius: 50%;
+
+    --globe-hue: 200;
+
+    background:
+        radial-gradient(
+            circle at 32% 28%,
+            hsl(var(--globe-hue), 85%, 75%),
+            hsl(var(--globe-hue), 75%, 45%) 50%,
+            #071426 85%
+        );
+
+    box-shadow:
+        0 0 30px hsl(var(--globe-hue), 85%, 50%, 0.45),
+        inset -12px -10px 25px #00000066;
+
+    position: relative;
+    overflow: hidden;
+    transition: background 0.5s, box-shadow 0.5s;
+}
+
+.globe::before {
+    content: "";
+    position: absolute;
+    inset: 0 25%;
+    border: 1px solid #ffffff55;
+    border-radius: 50%;
+}
+
+.globe::after {
+    content: "";
+    position: absolute;
+    inset: 30% 0;
+    border-top: 1px solid #ffffff55;
+    border-bottom: 1px solid #ffffff55;
+    border-radius: 50%;
+}
+
+.temperature {
+    font-size: 36px;
+    color: #77d7ff;
+    font-weight: bold;
+    margin: 8px;
+}
+
+.year {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.status {
+    color: #a9dfff;
+    font-size: 13px;
+    min-height: 20px;
+    margin-top: 15px;
+}
+
+input[type="range"] {
+    width: 95%;
+    accent-color: #53b9ff;
+    cursor: pointer;
+    margin: 20px 0;
+}
+
+.year-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #a9bdd3;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.chart-container {
+    background: #0c1d32;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 15px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+button {
+    padding: 13px 22px;
+    border: none;
+    border-radius: 30px;
+    background: #168bd1;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+    opacity: 0.8;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#pauseButton {
+    background: #a47730;
+}
+
+#stopButton {
+    background: #a94343;
+}
+
+#message {
+    text-align: center;
+    color: #a9dfff;
+    min-height: 25px;
+}
+
+.explanation {
+    color: #a9bdd3;
+    font-size: 12px;
+    line-height: 1.7;
+    text-align: center;
+}
+
+a {
+    color: #72c8ff;
+}
+
+/* ACCESSIBILITY CONTROLS */
+
+label {
+    display: block;
+    color: #d8e9f7;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+#volumeValue {
+    color: #77d7ff;
+    font-weight: bold;
+    text-align: center;
+}
+
+#speechStatus {
+    min-height: 22px;
+    margin-top: 15px;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+    outline: 3px solid #ffca6a;
+    outline-offset: 4px;
+}
+
+button {
+    transition: background 0.2s ease;
+}
+
+button:focus-visible {
+    background: #36aaff;
+}
+
+/* LIVE EARTH SOUND MONITOR */
+
+#soundMonitor {
+    grid-area: soundMonitor;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+}
+
+#soundMonitor h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.monitor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.monitor-item {
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.monitor-item span {
+    display: block;
+    font-size: 10px;
+    color: #9eb6d0;
+    margin-bottom: 6px;
+}
+
+.monitor-item strong {
+    font-size: 13px;
+    color: #72c8ff;
+}
+
+#soundMonitor p {
+    font-size: 11px;
+    color: #9eb6d0;
+    margin: 10px 0 0;
+}
+#soundMonitor {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+}
+
+#soundMonitor h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.monitor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.monitor-item {
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.monitor-item span {
+    display: block;
+    font-size: 10px;
+    color: #9eb6d0;
+    margin-bottom: 6px;
+}
+
+.monitor-item strong {
+    font-size: 13px;
+    color: #72c8ff;
+}
+
+#soundMonitor p {
+    font-size: 11px;
+    color: #9eb6d0;
+    margin: 10px 0 0;
+}
+/* =====================================
+   LANDSCAPE DASHBOARD LAYOUT
+===================================== */
+
+/* =====================================
+   WIND SPEED DASHBOARD
+===================================== */
+
+.wind-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.85fr)
+        minmax(0, 1.15fr);
+
+    gap: 20px;
+
+    align-items: center;
+
+}
+
+.wind-data,
+.wind-timeline {
+
+    background: #0c1d32;
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+}
+
+.wind-meter {
+
+    width: 100%;
+
+    height: 16px;
+
+    background: #203957;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    margin: 15px 0;
+
+}
+
+#windMeterBar {
+
+    width: 0%;
+
+    height: 100%;
+
+    background: #36B9A6;
+
+    border-radius: 20px;
+
+    transition: width 0.4s ease;
+
+}
+
+#windSlider {
+
+    width: 100%;
+
+    accent-color: #36B9A6;
+
+}
+
+#windSlider:disabled {
+
+    opacity: 0.4;
+
+}
+
+#windStatus {
+
+    text-align: center;
+
+    color: #a9dfff;
+
+    min-height: 24px;
+
+}
+
+
+@media (max-width: 650px) {
+
+    .wind-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+/* =====================================
+   RAINFALL DASHBOARD
+===================================== */
+
+.rainfall-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 0.85fr)
+        minmax(0, 1.15fr);
+
+    gap: 20px;
+
+    align-items: center;
+
+}
+
+.rainfall-data,
+.rainfall-timeline {
+
+    background: #0c1d32;
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+}
+
+
+.rain-meter {
+
+    width: 100%;
+
+    height: 16px;
+
+    background: #203957;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    margin: 15px 0;
+
+}
+
+#rainMeterBar {
+
+    width: 0%;
+
+    height: 100%;
+
+    background: #48b9eb;
+
+    border-radius: 20px;
+
+    transition: width 0.4s ease;
+
+}
+
+#rainStatus {
+
+    text-align: center;
+
+    color: #a9dfff;
+
+    min-height: 24px;
+
+}
+
+#rainSlider {
+
+    width: 100%;
+
+    accent-color: #48b9eb;
+
+}
+
+#rainSlider:disabled {
+
+    opacity: 0.4;
+
+}
+
+
+@media (max-width: 650px) {
+
+    .rainfall-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+/* =====================================
+   ADVANCED SOUND SETTINGS
+===================================== */
+
+.sound-select {
+
+    width: 100%;
+
+    padding: 12px;
+
+    margin: 10px 0 20px;
+
+    background: #13243c;
+
+    color: white;
+
+    border: 1px solid #45617f;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+}
+
+
+.sound-select:focus {
+
+    outline: 2px solid #72c8ff;
+
+    border-color: #72c8ff;
+
+}
+
+.trend-option {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    background: #13243c;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    margin-top: 10px;
+
+    cursor: pointer;
+
+}
+
+.trend-option input {
+
+    width: 18px;
+
+    height: 18px;
+
+    accent-color: #53b9ff;
+
+    cursor: pointer;
+
+}
+
+#trendDisplay {
+
+    color: #77d7ff;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    margin-top: 12px;
+
+}
+
+@media (min-width: 1000px) {
+
+    #windPanel {
+    grid-area: wind;
+    margin: 0;
+}
+    .container {
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+            
+        grid-template-areas:
+        "header header"
+        "data audio"
+        "data soundMonitor"
+        "trend visual"
+        "video video"
+        "rainfall rainfall"
+        "wind wind"
+        "credits credits";
+
+        #rainfallPanel {
+            grid-area: rainfall;
+            margin: 0;
+        }
+
+        gap: 16px;
+
+        align-items: stretch;
+
+    }
+
+    /* HEADER */
+
+    #appHeader {
+        grid-area: header;
+        margin-bottom: 0;
+        padding: 5px;
+    }
+
+    /* EARTH VISUALISATION */
+
+    #earthPanel {
+        grid-area: visual;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .globe {
+        width: 120px;
+        height: 120px;
+    }
+
+    /* TEMPERATURE DATA */
+
+    #dataPanel {
+        grid-area: data;
+        margin: 0;
+    }
+
+    /* TEMPERATURE GRAPH */
+
+    #trendPanel {
+        grid-area: trend;
+        margin: 0;
+    }
+
+    /* ACCESSIBILITY */
+
+
+    /* AUDIO WAVEFORM */
+
+    #wavePanel {
+        grid-area: wave;
+        margin: 0;
+    }
+
+    /* PLAYBACK CONTROLS */
+
+    #playbackControls {
+        grid-area: controls;
+        margin: 0;
+        align-content: center;
+    }
+
+    /* STATUS */
+
+    #message {
+        grid-area: message;
+        align-self: center;
+        margin: 0;
+    }
+
+    /* CREDITS */
+
+    #creditPanel {
+        grid-area: credits;
+        align-self: center;
+        margin: 0;
+    }
+
+    /* COMPACT SPACING */
+
+    .card {
+        padding: 16px;
+    }
+
+    .temperature {
+        font-size: 30px;
+    }
+
+    
+/* LEFT COLUMN: EARTH VISUALISATION */
+
+#earthPanel {
+    grid-area: visual;
+    min-width: 0;
+}
+
+
+/* LEFT COLUMN: EARTH SOUND */
+
+#audioDock {
+    grid-area: audio;
+    position: static !important;
+    transform: none;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+
+/* LEFT COLUMN: TEMPERATURE TREND */
+
+#trendPanel {
+    grid-area: trend;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+
+/* RIGHT COLUMN: TEMPERATURE DATA */
+
+#dataPanel {
+    grid-area: data;
+}
+
+
+/* RIGHT COLUMN: ACCESSIBILITY */
+
+
+
+/* OTHER SECTIONS */
+
+#rainfallPanel {
+    grid-area: rainfall;
+}
+
+#windPanel {
+    grid-area: wind;
+}
+
+#creditPanel {
+    grid-area: credits;
+}
+
+}
+
+/* TABLET AND MOBILE LAYOUT */
+
+@media (max-width: 999px) {
+
+    .container {
+        display: block;
+        width: 94%;
+    }
+
+    .card {
+        margin: 15px 0;
+    }
+
+    #earthPanel {
+        margin-bottom: 15px;
+    }
+
+}
+@media(max-width: 550px) {
+
+    .container {
+        padding: 17px;
+    }
+
+    h1 {
+        font-size: 30px;
+    }
+
+    .temperature {
+        font-size: 30px;
+    }
+
+    .globe {
+        width: 115px;
+        height: 115px;
+    }
+
+}
+
+/* =====================================
+   EARTH AUDIO PLAYER
+   POSITIONED UNDER TEMPERATURE GRAPH
+===================================== */
+
+#audioDock {
+
+    grid-area: audio;
+
+    position: static !important;
+
+    transform: none;
+
+    width: 100%;
+
+    max-width: none;
+
+    left: auto;
+
+    bottom: auto;
+
+    z-index: auto;
+
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    grid-template-areas:
+
+        "wave"
+
+        "controls"
+
+        "message";
+
+    gap: 6px;
+
+    align-items: center;
+
+    padding: 12px;
+
+    background: rgba(12, 29, 50, 0.97);
+
+    border: 1px solid #45617f;
+
+    border-radius: 16px;
+
+    box-shadow: 0 5px 20px #00000055;
+
+}
+
+#audioDock #wavePanel {
+
+    grid-area: wave;
+
+    margin: 0;
+
+    padding: 5px;
+
+    background: transparent;
+
+    box-shadow: none;
+
+}
+
+#audioDock #wavePanel h2 {
+
+    font-size: 15px;
+
+    margin: 5px 0;
+
+}
+
+#audioDock #waveCanvas {
+
+    width: 100%;
+
+    height: 50px;
+
+}
+
+#audioDock #playbackControls {
+
+    grid-area: controls;
+
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin: 5px 0;
+
+}
+
+#audioDock #playbackControls button {
+
+    padding: 10px 13px;
+
+    font-size: 12px;
+
+}
+
+#audioDock #message {
+
+    grid-area: message;
+
+    margin: 0;
+
+    min-height: 20px;
+
+    font-size: 12px;
+
+    text-align: center;
+
+}
+
+/* REMOVE EXTRA SPACE FOR OLD FIXED PLAYER */
+
+body {
+
+    padding-bottom: 30px;
+
+}
+#soundMonitor {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+}
+
+#soundMonitor h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.monitor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.monitor-item {
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.monitor-item span {
+    display: block;
+    font-size: 10px;
+    color: #9eb6d0;
+    margin-bottom: 6px;
+}
+
+.monitor-item strong {
+    font-size: 13px;
+    color: #72c8ff;
+}
+
+#soundMonitor p {
+    font-size: 11px;
+    color: #9eb6d0;
+    margin: 10px 0 0;
+}
+
+/* NASA VIDEO PANEL */
+.eic-video { margin: 16px 0; }
+.eic-video h3 { margin: 0 0 6px; text-align: center; }
+.eic-label { display: block; font-weight: 600; margin: 10px 0 6px; }
+.eic-video input[type="file"] { display: block; width: 100%; margin-bottom: 10px; }
+.eic-video video { display: block; width: 100%; max-width: 100%; background: #000; border-radius: 10px; min-height: 120px; }
+.eic-video .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; justify-content: center; }
+.eic-rules { font-size: 0.9rem; line-height: 1.7; padding-left: 20px; margin: 8px 0; }
+.eic-credit { font-size: 0.85rem; opacity: 0.85; }
+.eic-description { margin: 10px 0 14px; }
+.eic-description summary { cursor: pointer; font-weight: 600; }
+
+/* =====================================
+   FLOATING ACCESSIBILITY BUTTON AND PANEL
+===================================== */
+
+#accessToggle {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1000;
+    padding: 12px 18px;
+    background: #168bd1;
+    box-shadow: 0 4px 16px #000a;
+}
+
+#accessToggle[hidden] {
+    display: none;
+}
+
+#accessibilityPanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+    width: min(420px, 100vw);
+    margin: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    border-radius: 16px 0 0 16px;
+    box-shadow: -8px 0 30px #000a;
+}
+
+#accessibilityPanel[hidden] {
+    display: none;
+}
+
+.access-close {
+    display: block;
+    margin: 0 0 10px auto;
+    padding: 8px 16px;
+    background: #a94343;
+}
+
+#accessibilityHeading:focus {
+    outline: none;
+}
+
+/* =====================================
+   TIDIER LAYOUT
+===================================== */
+
+/* Keep the video a sensible size on wide screens */
+.eic-video video {
+    max-height: 420px;
+    margin: 0 auto;
+}
+
+/* Waveform a little larger beside the temperature data */
+@media (min-width: 1000px) {
+
+    #audioDock {
+        align-content: center;
+    }
+
+    #audioDock #waveCanvas {
+        height: 90px;
+    }
+}
+
+@media (min-width: 1000px) {
+    #eicVideoPanel {
+        grid-area: video;
+        margin: 0;
+    }
+}
+
+/* =====================================
+   TREND + VISUALISATION: SAME WIDTH AND HEIGHT
+===================================== */
+
+#trendPanel {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+#trendPanel .chart-container {
+    flex: 1 1 auto;
+    position: relative;
+    min-height: 300px;
+}
+
+#trendPanel #trendCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#earthPanel {
+    box-sizing: border-box;
+}
+
+/* EARTH VIDEO DASHBOARD (matches Daily Rainfall layout) */
+.eic-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 20px;
+    align-items: start;
+}
+.eic-left, .eic-right {
+    background: #0c1d32;
+    padding: 18px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    min-width: 0;
+}
+.eic-right { height: 100%; text-align: left; }
+.eic-right h3 { margin-top: 0; }
+#eicVideoPanel video { max-height: 340px; min-height: 200px; }
+@media (max-width: 999px) {
+    .eic-layout { grid-template-columns: 1fr; }
+}
+#trendPanel .chart-container { min-height: 240px; }
+@media (min-width: 1000px) { #eicVideoPanel { min-height: 632px; display: flex; flex-direction: column; } .eic-layout { flex: 1; align-items: stretch; } }
+</style>
+</head>
+
+<body>
+
+<!-- FLOATING ACCESSIBILITY BUTTON (opens and closes the panel below) -->
+
+<button
+    type="button"
+    id="accessToggle"
+    aria-expanded="false"
+    aria-controls="accessibilityPanel">
+    ♿ Accessibility
+</button>
+
+<!-- ACCESSIBLE LISTENING EXPERIENCE (hidden until the button is pressed) -->
+
+<div class="card" id="accessibilityPanel" role="region" aria-labelledby="accessibilityHeading" hidden>
+
+    <button type="button" id="accessClose" class="access-close">✕ Close</button>
+
+    <h2 id="accessibilityHeading" tabindex="-1">
+        ♿ Accessible Listening Experience
+    </h2>
+
+    <p class="explanation">
+        Personalise your listening experience
+        and understand Earth's temperature changes.
+    </p>
+
+    <!-- VOLUME CONTROL -->
+
+    <h3>🔊 Sound Volume</h3>
+
+    <label for="volumeSlider">
+        Adjust the audio volume:
+    </label>
+
+    <input
+        type="range"
+        id="volumeSlider"
+        min="0"
+        max="100"
+        value="45"
+        aria-label="Sound volume"
+    >
+
+    <p id="volumeValue" aria-live="off">
+        Volume: 45%
+    </p>
+
+    <!-- SOUND MAPPING LEGEND -->
+
+    <h3>🎵 Understanding the Earth Sounds</h3>
+
+    <div class="chart-container">
+
+        <p>
+            <strong>Lower pitch</strong>
+            <br>
+            Represents a lower temperature anomaly.
+        </p>
+
+        <p>
+            <strong>Medium pitch</strong>
+            <br>
+            Represents a moderate temperature anomaly.
+        </p>
+
+        <p>
+            <strong>Higher pitch</strong>
+            <br>
+            Represents a higher temperature anomaly.
+        </p>
+
+    </div>
+    
+    <!-- ADVANCED SOUND SETTINGS -->
+     
+    <div class="chart-container">
+
+    <h3>🎼 Advanced Sound Settings</h3>
+
+    <p class="explanation">These settings apply to every sound on this page: temperature, rainfall, wind and the Earth video.</p>
+
+    <!-- SOUND WAVEFORM SELECTION -->
+
+    <label for="waveType">
+        Select Sound Style:
+    </label>
+
+    <select id="waveType" class="sound-select">
+
+        <option value="sine">
+            Sine Wave - Smooth
+        </option>
+
+        <option value="triangle">
+            Triangle Wave - Mellow
+        </option>
+
+        <option value="square">
+            Square Wave - Electronic
+        </option>
+
+    </select>
+
+    <!-- PLAYBACK SPEED -->
+
+    <label for="playbackSpeed">
+        Select Playback Speed:
+    </label>
+
+    <select id="playbackSpeed" class="sound-select">
+
+        <option value="1000">
+            Slow - 1 year per second
+        </option>
+
+        <option value="500" selected>
+            Normal - 2 years per second
+        </option>
+
+        <option value="250">
+            Fast - 4 years per second
+        </option>
+
+    </select>
+
+    
+    <!-- TEMPERATURE TREND ACCENT -->
+
+    <label class="trend-option">
+
+        <input
+            type="checkbox"
+            id="trendAccentToggle"
+            checked
+        >
+
+        Enable temperature change sound accents
+
+    </label>
+
+    <p class="explanation">
+
+        Different waveforms change the sound quality.
+
+        Playback speed controls how quickly
+        the historical years progress.
+
+        Additional sound accents indicate
+        year-to-year temperature changes.
+
+    </p>
+
+</div>
+
+    <p class="explanation">
+        These sounds are generated representations
+        of scientific data, not actual environmental sounds.
+    </p>
+
+</div>
+
+<div class="container">
+
+    <header id="appHeader">
+
+        <h1>TERRATONE</h1>
+
+        <p class="tagline">
+            Hear the Earth. Feel the Change.
+        </p>
+
+        <h2>NASA Earth Jukebox</h2>
+
+        <p class="explanation">
+            Explore Earth's changing temperature through sound.
+        </p>
+        
+
+    </header>
+
+    <!-- 1. TEMPERATURE: data, player and monitor sit together -->
+
+    <div class="card" id="dataPanel">
+
+        <h2>Earth Temperature Data</h2>
+
+        <p>Selected Year</p>
+
+        <div class="year" id="yearDisplay">
+            Loading...
+        </div>
+
+        <p>Global Temperature Anomaly</p>
+
+        <div class="temperature" id="temperatureDisplay">
+            -- °C
+        </div>
+
+        <p id="frequencyDisplay">
+            Frequency: -- Hz
+       
+        </p>
+        <p id="trendDisplay" aria-live="polite">
+            Year-to-year change: Loading...
+        </p>
+
+        <input
+            type="range"
+            id="yearSlider"
+            min="0"
+            max="1"
+            value="0"
+            disabled
+        >
+
+        <div class="year-labels">
+            <span id="firstYear">1880</span>
+            <span id="lastYear">2025</span>
+        </div>
+
+    </div>
+
+    <div id="audioDock">
+
+    <!-- WAVEFORM -->
+
+    <div class="card" id="wavePanel">
+
+        <h2>🎵 Earth Sound Waveform</h2>
+
+        <div class="chart-container">
+
+            <canvas
+                id="waveCanvas"
+                width="760"
+                height="100">
+            </canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- PLAYBACK BUTTONS -->
+
+    <div class="controls" id="playbackControls">
+
+        <button id="playButton" disabled>
+            ▶ Play Earth
+        </button>
+
+        <button id="pauseButton" disabled>
+            ⏸ Pause
+        </button>
+
+        <button id="stopButton" disabled>
+            ■ Stop
+        </button>
+
+    </div>
+
+
+    <!-- PLAYBACK STATUS -->
+
+    <p id="message" class="status" aria-live="polite">
+        Ready to explore Earth's data.
+    </p>
+
+</div>
+
+    <div class="card" id="soundMonitor">
+    <h3>📡 Live Earth Sound Monitor</h3>
+
+    <div class="monitor-grid">
+        <div class="monitor-item">
+            <span>ACTIVE DATASET</span>
+            <strong id="activeDataset">Temperature</strong>
+        </div>
+
+        <div class="monitor-item">
+            <span>PLAYBACK STATUS</span>
+            <strong id="monitorStatus">Ready</strong>
+        </div>
+
+        <div class="monitor-item">
+            <span>SOUND FREQUENCY</span>
+            <strong id="monitorFrequency">-- Hz</strong>
+        </div>
+    </div>
+
+    <p>Monitoring Earth's changing environmental conditions.</p>
+</div>
+
+    <!-- 2. TEMPERATURE TREND GRAPH -->
+
+    <div class="card" id="trendPanel">
+
+        <h2>Global Temperature Trend</h2>
+
+        <p class="explanation">
+            Historical annual temperature anomalies
+            based on NASA GISTEMP data.
+        </p>
+
+        <div class="chart-container">
+
+            <canvas
+                id="trendCanvas"
+                width="760"
+                height="300"
+                role="img"
+                aria-label="Line graph of NASA annual global temperature anomalies">
+            </canvas>
+
+        </div>
+
+        <p class="explanation">
+            The highlighted point represents
+            the currently selected year.
+        </p>
+
+    </div>
+
+    <!-- 3. EARTH VISUALISATION AND NASA VIDEO -->
+
+    <div class="visual-area" id="earthPanel">
+
+        <h2>🌍 Global Temperature Visualisation</h2>
+
+        <div class="globe" id="earthGlobe"
+             role="img"
+             aria-label="Illustrative globe showing the selected temperature anomaly">
+        </div>
+
+        <p class="explanation">
+            The globe colour changes according to the
+            selected global temperature anomaly.
+        </p>
+
+        <a href="https://svs.gsfc.nasa.gov/5603/"
+           target="_blank"
+           rel="noopener">
+            View original NASA visualisation
+        </a>
+
+    </div>
+
+    <!-- EARTH VIDEO SONIFICATION (separate dashboard) -->
+
+    <!-- EARTH VIDEO SONIFICATION (separate dashboard, same size as rainfall) -->
+
+    <div class="card" id="eicVideoPanel">
+
+        <h2>🎬 Earth Video Sonification</h2>
+
+        <p class="explanation">
+            Choose a NASA Earth video saved on your computer.
+            The page listens to the colours inside the video
+            and turns them into notes.
+        </p>
+
+        <div class="eic-layout">
+
+            <!-- LEFT: insert video and controls -->
+
+            <div class="eic-left">
+
+                <label for="eicVideoFile" class="eic-label">
+                    Step 1: choose a NASA video file
+                </label>
+
+                <input type="file" id="eicVideoFile" accept="video/*">
+
+                <video
+                    id="eicVideo"
+                    controls
+                    muted
+                    playsinline
+                    preload="metadata"
+                    aria-label="NASA Earth video. The sound you hear is generated from its colours.">
+                </video>
+
+                <div class="controls">
+                    <button type="button" id="eicPlayButton" disabled>
+                        ▶ Play / Resume video with sound
+                    </button>
+                    <button type="button" id="eicPauseButton" disabled>
+                        ⏸ Pause
+                    </button>
+                    <button type="button" id="eicStopButton" disabled>
+                        ■ Stop
+                    </button>
+                </div>
+
+                <p id="eicVideoStatus" class="status" aria-live="polite">
+                    Choose a video to begin.
+                </p>
+
+            </div>
+
+            <!-- RIGHT: description -->
+
+            <div class="eic-right">
+
+                <h3>How the sound works</h3>
+
+                <ul class="eic-rules">
+                    <li>Warm colours (red, orange) = higher notes</li>
+                    <li>Cool colours (blue) = lower notes</li>
+                    <li>Brighter picture = louder sound</li>
+                    <li>Lots of red in the picture = a second, higher note joins in</li>
+                    <li>Black space = silence</li>
+                </ul>
+
+                <p id="eicColourReadout" class="explanation" aria-live="off">
+                    Colour reading will appear here while the video plays.
+                </p>
+
+                <details class="eic-description">
+                    <summary>Describe how the sound works in words</summary>
+                    <p>
+                        The page looks at the video about five times every
+                        second. It ignores the black background of space
+                        and measures the colours of the Earth. If the Earth
+                        looks warmer (more red and orange), it plays a
+                        higher note. If it looks cooler (more blue), it
+                        plays a lower note. A brighter picture is louder.
+                        When a lot of red appears, a second note plays
+                        above the first. All notes come from a pleasant
+                        five-note scale, so the result is musical.
+                    </p>
+                </details>
+
+                <p class="eic-credit">
+                    Video: NASA / Goddard Space Flight Center Scientific
+                    Visualization Studio, or the NASA Earth Information
+                    Center (earth.gov). The sound is generated live from
+                    the colours in the video.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 4. RAINFALL -->
+
+    <div class="card" id="rainfallPanel">
+
+    <h2>🌧️ Daily Rainfall Sonification</h2>
+
+    <p class="explanation">
+        Explore daily precipitation data from NASA POWER.
+        More rainfall produces more frequent sound pulses.
+    </p>
+
+    <p>
+        <strong>Selected Location:</strong>
+        Kuching area, Sarawak
+    </p>
+
+    <p class="explanation">
+        Approximate NASA POWER grid point:
+        1.55° N, 110.35° E.
+    </p>
+
+    <div class="rainfall-layout">
+
+        <!-- RAINFALL DATA -->
+
+        <div class="rainfall-data">
+
+            <p>Selected Date</p>
+
+            <div class="temperature" id="rainDate">
+                Not loaded
+            </div>
+
+            <p>Daily Precipitation</p>
+
+            <div class="temperature" id="rainAmount">
+                -- mm/day
+            </div>
+
+            <p id="rainPulseCount">
+                Sound pulses: --
+            </p>
+
+            <div class="rain-meter">
+                <div id="rainMeterBar"></div>
+            </div>
+
+            <p class="explanation">
+                The meter represents the rainfall intensity
+                relative to a 50 mm/day display scale.
+            </p>
+
+        </div>
+
+        <!-- RAINFALL TIMELINE -->
+
+        <div class="rainfall-timeline">
+
+            <h3>Daily Rainfall Timeline</h3>
+
+            <input
+                type="range"
+                id="rainSlider"
+                min="0"
+                max="1"
+                value="0"
+                disabled
+                aria-label="Select rainfall date"
+            >
+
+            <div class="year-labels">
+
+                <span>1 January 2025</span>
+
+                <span>31 December 2025</span>
+
+            </div>
+
+            <div class="controls">
+
+                <button
+                    type="button"
+                    id="loadRainButton"
+                >
+                    Load Rainfall Data
+                </button>
+
+                <button
+                    type="button"
+                    id="playRainButton"
+                    disabled
+                >
+                    ▶ Play Rainfall
+                </button>
+
+                <button
+                    type="button"
+                    id="pauseRainButton"
+                    disabled
+                >
+                    ⏸ Pause
+                </button>
+
+                <button
+                    type="button"
+                    id="stopRainButton"
+                    disabled
+                >
+                    ■ Stop
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <p id="rainStatus" class="status" aria-live="polite">
+        Press Load Rainfall Data to retrieve NASA information.
+    </p>
+
+    <p class="explanation">
+
+        Data source:
+        <a
+            href="https://power.larc.nasa.gov/"
+            target="_blank"
+            rel="noopener"
+        >
+            NASA POWER
+        </a>
+
+        <br>
+
+        Parameter: PRECTOTCORR (mm/day).
+
+        <br>
+
+        Daily meteorological grid estimate, not a local
+        rain-gauge observation.
+
+    </p>
+
+</div>
+
+    <!-- 5. WIND SPEED -->
+
+    <div class="card" id="windPanel">
+
+    <h2>🌬️ Wind Speed Sonification</h2>
+
+    <p class="explanation">
+        Explore daily wind speed information
+        from NASA POWER through sound intensity.
+    </p>
+
+    <div class="wind-layout">
+
+        <!-- WIND DATA DISPLAY -->
+
+        <div class="wind-data">
+
+            <h3>Wind Information</h3>
+
+            <p>Selected Date</p>
+
+            <div class="temperature" id="windDate">
+                Not loaded
+            </div>
+
+            <p>Average Wind Speed</p>
+
+            <div class="temperature" id="windSpeed">
+                -- m/s
+            </div>
+
+            <p id="windIntensity">
+                Sound Intensity: --
+            </p>
+
+            <div class="wind-meter">
+
+                <div id="windMeterBar"></div>
+
+            </div>
+
+            <p class="explanation">
+                Display scale: 0–15 m/s.
+            </p>
+
+        </div>
+
+
+        <!-- WIND PLAYBACK -->
+
+        <div class="wind-timeline">
+
+            <h3>Wind Speed Timeline</h3>
+
+            <label for="windSlider">
+                Select a date:
+            </label>
+
+            <input
+                type="range"
+                id="windSlider"
+                min="0"
+                max="1"
+                value="0"
+                disabled
+            >
+
+            <div class="year-labels">
+
+                <span>1 January 2025</span>
+
+                <span>31 December 2025</span>
+
+            </div>
+
+
+            <div class="controls">
+
+                <button
+                    type="button"
+                    id="loadWindButton"
+                >
+                    Load Wind Data
+                </button>
+
+                <button
+                    type="button"
+                    id="playWindButton"
+                    disabled
+                >
+                    ▶ Play Wind
+                </button>
+
+                <button
+                    type="button"
+                    id="pauseWindButton"
+                    disabled
+                >
+                    ⏸ Pause
+                </button>
+
+                <button
+                    type="button"
+                    id="stopWindButton"
+                    disabled
+                >
+                    ■ Stop
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <p id="windStatus" class="status" aria-live="polite">
+
+        Press Load Wind Data to retrieve NASA information.
+
+    </p>
+
+
+<p class="explanation">
+
+        Data source: NASA POWER.
+
+        <br>
+
+        Parameter: WS10M (m/s).
+
+        <br>
+
+        Daily average wind speed at 10 metres.
+
+        <br>
+
+        Values represent regional grid estimates,
+        not direct local wind measurements.
+
+    </p>
+
+</div>
+
+    <!-- CREDIT -->
+
+    <div class="explanation" id="creditPanel">
+
+        Data source: NASA GISS Surface Temperature
+        Analysis (GISTEMP v4).
+
+        <br>
+
+        Reference period: 1951–1980.
+
+        <br>
+
+        Visualisation: TerraTone data-driven chart
+        using NASA annual temperature records.
+
+        <br>
+
+        NASA reference:
+        <a href="https://svs.gsfc.nasa.gov/5603/"
+           target="_blank"
+           rel="noopener">NASA Scientific Visualization Studio</a>.
+
+    </div>
+
+</div>
+
+<script>
+
+// ========================================
+// 1. GET HTML ELEMENTS
+// ========================================
+
+const yearDisplay =
+    document.getElementById("yearDisplay");
+
+const temperatureDisplay =
+    document.getElementById("temperatureDisplay");
+
+const frequencyDisplay =
+    document.getElementById("frequencyDisplay");
+
+const yearSlider =
+    document.getElementById("yearSlider");
+
+const firstYear =
+    document.getElementById("firstYear");
+
+const lastYear =
+    document.getElementById("lastYear");
+
+const playButton =
+    document.getElementById("playButton");
+
+const pauseButton =
+    document.getElementById("pauseButton");
+
+const stopButton =
+    document.getElementById("stopButton");
+
+const message =
+    document.getElementById("message");
+
+// ========================================
+// ADVANCED SOUND SETTINGS ELEMENTS
+// ========================================
+
+const waveTypeSelect =
+    document.getElementById("waveType");
+
+const playbackSpeedSelect =
+    document.getElementById("playbackSpeed");
+
+const trendAccentToggle =
+    document.getElementById("trendAccentToggle");
+
+const trendDisplay =
+    document.getElementById("trendDisplay");
+
+// ACCESSIBILITY ELEMENTS
+
+const volumeSlider =
+    document.getElementById("volumeSlider");
+
+const volumeValue =
+    document.getElementById("volumeValue");
+
+const earthGlobe =
+    document.getElementById("earthGlobe");
+
+const trendCanvas =
+    document.getElementById("trendCanvas");
+
+const trendCtx =
+    trendCanvas.getContext("2d");
+
+const waveCanvas =
+    document.getElementById("waveCanvas");
+
+const waveCtx =
+    waveCanvas.getContext("2d");
+
+// ========================================
+// 2. PREPARE VARIABLES
+// ========================================
+
+let temperatureData = [];
+
+let currentIndex = 0;
+
+let timer = null;
+
+let isPlaying = false;
+
+let audioContext = null;
+
+let oscillator = null;
+
+let gainNode = null;
+
+let analyser = null;
+
+let waveformData = null;
+
+let yearInterval = 500;
+
+// ========================================
+// 3. LOAD NASA CSV DATA
+// ========================================
+
+async function loadNASAData() {
+
+    try {
+
+        const response = await fetch(
+            "./data/GLB.Ts+dSST.csv"
+        );
+
+        if (!response.ok) {
+            throw new Error("CSV file not found.");
+        }
+
+        const csvText = await response.text();
+
+        const lines = csvText.split(/\r?\n/);
+
+        const headerIndex = lines.findIndex(line => {
+
+            return line.replace(/"/g, "")
+                .trim()
+                .toLowerCase()
+                .startsWith("year,");
+
+        });
+
+        if (headerIndex === -1) {
+            throw new Error("CSV header not found.");
+        }
+
+        const cleanField = value =>
+            value.trim().replace(/^"|"$/g, "");
+
+        const headers = lines[headerIndex]
+            .split(",")
+            .map(cleanField);
+
+        const annualIndex = headers.findIndex(
+            name => name.toUpperCase() === "J-D"
+        );
+
+        if (annualIndex === -1) {
+            throw new Error("Annual J-D data not found.");
+        }
+
+        // Read annual temperature records
+
+        for (
+            let i = headerIndex + 1;
+            i < lines.length;
+            i++
+        ) {
+
+            if (!lines[i].trim()) continue;
+
+            const columns = lines[i]
+                .split(",")
+                .map(cleanField);
+
+            const year = Number(columns[0]);
+
+            const rawValue = columns[annualIndex];
+
+            if (!rawValue || rawValue.includes("*")) {
+                continue;
+            }
+
+            const anomaly = Number(rawValue);
+
+            if (
+                Number.isInteger(year) &&
+                Number.isFinite(anomaly)
+            ) {
+
+                temperatureData.push({
+                    year: year,
+                    anomaly: anomaly
+                });
+
+            }
+
+        }
+
+        temperatureData.sort(
+            (a, b) => a.year - b.year
+        );
+
+        if (temperatureData.length === 0) {
+            throw new Error("No valid records found.");
+        }
+
+        currentIndex = 0;
+
+        yearSlider.min = 0;
+
+        yearSlider.max = temperatureData.length - 1;
+
+        yearSlider.value = 0;
+
+        yearSlider.disabled = false;
+
+        firstYear.textContent =
+            temperatureData[0].year;
+
+        lastYear.textContent =
+            temperatureData[temperatureData.length - 1].year;
+
+        updateDisplay();
+
+        updateButtons();
+
+        message.textContent =
+            "NASA temperature records loaded successfully.";
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Unable to load NASA CSV. Check your data folder.";
+
+    }
+
+}
+
+// ========================================
+// 4. CALCULATE AUDIO FREQUENCY
+// ========================================
+
+// ========================================
+// MUSICAL SCALE (C major pentatonic: C D E G A)
+// ========================================
+
+// Every note the dashboard is allowed to play (C4 up to C6)
+const EARTH_NOTES = [
+    261.63, 293.66, 329.63, 392.00, 440.00,
+    523.25, 587.33, 659.25, 783.99, 880.00,
+    1046.50
+];
+
+// Move any pitch to the nearest note of the scale
+function snapToScale(frequency) {
+
+    const scale = [0, 2, 4, 7, 9];
+
+    const midi = 69 + 12 * Math.log2(frequency / 440);
+
+    let best = Math.round(midi);
+    let bestDistance = Infinity;
+
+    for (let m = Math.floor(midi) - 2; m <= Math.ceil(midi) + 2; m++) {
+
+        if (scale.includes(((m % 12) + 12) % 12)) {
+
+            const distance = Math.abs(m - midi);
+
+            if (distance < bestDistance) {
+                best = m;
+                bestDistance = distance;
+            }
+        }
+    }
+
+    return 440 * Math.pow(2, (best - 69) / 12);
+}
+
+function calculateFrequency(anomaly) {
+
+    const minimum = -0.5;
+
+    const maximum = 1.5;
+
+    let normalised =
+        (anomaly - minimum) / (maximum - minimum);
+
+    normalised = Math.max(
+        0,
+        Math.min(1, normalised)
+    );
+
+    // Smooth pitch first, then snap it to the nearest musical note
+    return Math.round(snapToScale(220 + normalised * 660));
+
+}
+
+// ========================================
+// 5. UPDATE EARTH VISUAL INDICATOR
+// ========================================
+
+function updateGlobe(anomaly) {
+
+    const normalised = Math.max(
+        0,
+        Math.min(1, (anomaly + 0.5) / 2)
+    );
+
+    // Blue at lower values, orange/red at higher values
+
+    const hue = 210 - (normalised * 195);
+
+    earthGlobe.style.setProperty(
+        "--globe-hue",
+        hue
+    );
+
+    earthGlobe.setAttribute(
+        "aria-label",
+        "Illustrative globe representing a global temperature anomaly of " +
+        anomaly.toFixed(2) + " degrees Celsius"
+    );
+
+}
+
+// ========================================
+// 6. DRAW NASA TEMPERATURE GRAPH
+// ========================================
+
+function fitTrendCanvas() {
+
+    const box = trendCanvas.parentElement;
+
+    const w = Math.max(300, Math.round(box.clientWidth));
+
+    const h = Math.max(260, Math.round(box.clientHeight));
+
+    if (trendCanvas.width !== w) trendCanvas.width = w;
+
+    if (trendCanvas.height !== h) trendCanvas.height = h;
+}
+
+function drawTrendChart(selectedIndex) {
+
+    if (temperatureData.length === 0) return;
+
+    fitTrendCanvas();
+
+    const width = trendCanvas.width;
+
+    const height = trendCanvas.height;
+
+    const left = 65;
+
+    const right = 20;
+
+    const top = 25;
+
+    const bottom = 45;
+
+    const plotWidth = width - left - right;
+
+    const plotHeight = height - top - bottom;
+
+    // Find actual dataset range
+
+    const values = temperatureData.map(
+        item => item.anomaly
+    );
+
+    const minValue = Math.floor(
+        Math.min(...values) * 10
+    ) / 10 - 0.1;
+
+    const maxValue = Math.ceil(
+        Math.max(...values) * 10
+    ) / 10 + 0.1;
+
+    function xPosition(index) {
+
+        return left +
+            (index / Math.max(1, temperatureData.length - 1))
+            * plotWidth;
+
+    }
+
+    function yPosition(value) {
+
+        return top +
+            ((maxValue - value) / (maxValue - minValue))
+            * plotHeight;
+
+    }
+
+    trendCtx.clearRect(0, 0, width, height);
+
+    trendCtx.font = "12px Arial";
+
+    // Draw grid lines
+
+    for (let i = 0; i <= 4; i++) {
+
+        const value =
+            minValue + ((maxValue - minValue) * i / 4);
+
+        const y = yPosition(value);
+
+        trendCtx.beginPath();
+
+        trendCtx.strokeStyle = "#304963";
+
+        trendCtx.lineWidth = 1;
+
+        trendCtx.moveTo(left, y);
+
+        trendCtx.lineTo(width - right, y);
+
+        trendCtx.stroke();
+
+
+        trendCtx.fillStyle = "#a9bdd3";
+
+        trendCtx.textAlign = "right";
+
+        trendCtx.fillText(
+            value.toFixed(1) + "°",
+            left - 8,
+            y + 4
+        );
+
+    }
+
+    // Draw temperature trend line
+
+    trendCtx.beginPath();
+
+    trendCtx.strokeStyle = "#72c8ff";
+
+    trendCtx.lineWidth = 2.5;
+
+    temperatureData.forEach((record, index) => {
+
+        const x = xPosition(index);
+
+        const y = yPosition(record.anomaly);
+
+        if (index === 0) {
+
+            trendCtx.moveTo(x, y);
+
+        } else {
+
+            trendCtx.lineTo(x, y);
+
+        }
+
+    });
+
+    trendCtx.stroke();
+
+    // Draw selected year marker
+
+    const selected = temperatureData[selectedIndex];
+
+    if (!selected) return;
+
+    const selectedX = xPosition(selectedIndex);
+
+    const selectedY = yPosition(selected.anomaly);
+
+    trendCtx.beginPath();
+
+    trendCtx.setLineDash([5, 5]);
+
+    trendCtx.strokeStyle = "#ffb45d";
+
+    trendCtx.lineWidth = 2;
+
+    trendCtx.moveTo(selectedX, top);
+
+    trendCtx.lineTo(selectedX, height - bottom);
+
+    trendCtx.stroke();
+
+    trendCtx.setLineDash([]);
+
+    // Highlight selected data point
+
+    trendCtx.beginPath();
+
+    trendCtx.arc(selectedX, selectedY, 6, 0, Math.PI * 2);
+
+    trendCtx.fillStyle = "#ffb45d";
+
+    trendCtx.fill();
+
+    trendCtx.beginPath();
+
+    trendCtx.arc(selectedX, selectedY, 10, 0, Math.PI * 2);
+
+    trendCtx.strokeStyle = "#ffb45d";
+
+    trendCtx.lineWidth = 2;
+
+    trendCtx.stroke();
+
+    // X-axis labels
+
+    trendCtx.fillStyle = "#a9bdd3";
+
+    trendCtx.textAlign = "center";
+
+    trendCtx.fillText(
+        temperatureData[0].year,
+        left,
+        height - 12
+    );
+
+    trendCtx.fillText(
+        temperatureData[
+            Math.floor(temperatureData.length / 2)
+        ].year,
+        left + plotWidth / 2,
+        height - 12
+    );
+
+    trendCtx.fillText(
+        temperatureData[temperatureData.length - 1].year,
+        width - right,
+        height - 12
+    );
+
+}
+
+// ========================================
+// 7. UPDATE TEMPERATURE INFORMATION
+// ========================================
+
+function updateDisplay() {
+
+    const record = temperatureData[currentIndex];
+
+    if (!record) return;
+
+    const sign = record.anomaly > 0 ? "+" : "";
+
+    const frequency =
+        calculateFrequency(record.anomaly);
+
+    yearDisplay.textContent = record.year;
+
+    temperatureDisplay.textContent =
+        sign + record.anomaly.toFixed(2) + "°C";
+
+    frequencyDisplay.textContent =
+        "Sound Frequency: " + frequency + " Hz";
+    updateSoundMonitor("Temperature", isPlaying ? "Playing" : "Ready", Number(frequency));
+       
+        
+// CALCULATE YEAR-TO-YEAR TEMPERATURE CHANGE
+
+const previousRecord =
+    temperatureData[currentIndex - 1];
+
+if (previousRecord) {
+
+    const change =
+        record.anomaly - previousRecord.anomaly;
+
+    const sign = change > 0 ? "+" : "";
+
+    let direction;
+
+    if (change > 0) {
+
+        direction = "Increased";
+
+    } else if (change < 0) {
+
+        direction = "Decreased";
+
+    } else {
+
+        direction = "Unchanged";
+
+    }
+
+    trendDisplay.textContent =
+        direction + " by " +
+        sign + change.toFixed(2) +
+        "°C compared with the previous year.";
+
+} else {
+
+    trendDisplay.textContent =
+        "No previous year available for comparison.";
+
+}
+
+    yearSlider.value = currentIndex;
+
+    updateGlobe(record.anomaly);
+
+    drawTrendChart(currentIndex);
+
+    // Change audio pitch when the year changes
+
+    if (oscillator && audioContext && isPlaying) {
+
+        oscillator.frequency.setTargetAtTime(
+            frequency,
+            audioContext.currentTime,
+            0.12
+        );
+
+    }
+
+}
+
+// ========================================
+// 8. CREATE CONTINUOUS AUDIO
+// ========================================
+
+// CONVERT VOLUME SLIDER INTO AUDIO VOLUME
+
+function getVolumeGain() {
+
+    const sliderValue = Number(volumeSlider.value);
+
+    // Convert percentage into a safe audio gain
+
+    return (sliderValue / 100) * 0.08;
+
+}
+
+async function startAudio() {
+
+    const AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+        throw new Error("Web Audio is not supported.");
+    }
+
+    if (!audioContext) {
+
+        audioContext = new AudioContextClass();
+
+        oscillator = audioContext.createOscillator();
+
+        gainNode = audioContext.createGain();
+
+        analyser = audioContext.createAnalyser();
+
+        analyser.fftSize = 2048;
+
+        waveformData = new Uint8Array(analyser.fftSize);
+
+        oscillator.type = waveTypeSelect.value;
+
+        oscillator.frequency.value =
+            calculateFrequency(
+                temperatureData[currentIndex].anomaly
+            );
+
+        gainNode.gain.value = 0;
+
+        oscillator.connect(analyser);
+
+        analyser.connect(gainNode);
+
+        gainNode.connect(audioContext.destination);
+
+        oscillator.start();
+
+    }
+
+    await audioContext.resume();
+
+    gainNode.gain.cancelScheduledValues(
+        audioContext.currentTime
+    );
+
+    gainNode.gain.setTargetAtTime(
+    getVolumeGain(),
+    audioContext.currentTime,
+    0.08
+);
+
+}
+
+// VOLUME SLIDER INTERACTION
+
+volumeSlider.addEventListener("input", function() {
+
+    const percentage = Number(volumeSlider.value);
+
+    volumeValue.textContent =
+        "Volume: " + percentage + "%";
+
+    // Adjust sound volume while playing
+
+    if (gainNode && audioContext && isPlaying) {
+
+        gainNode.gain.setTargetAtTime(
+
+            getVolumeGain(),
+
+            audioContext.currentTime,
+
+            0.03
+
+        );
+
+    }
+
+});
+
+// ========================================
+// 9. FADE OUT AUDIO
+// ========================================
+
+function fadeAudio() {
+
+    if (!gainNode || !audioContext) return;
+
+    gainNode.gain.cancelScheduledValues(
+        audioContext.currentTime
+    );
+
+    gainNode.gain.setTargetAtTime(
+        0,
+        audioContext.currentTime,
+        0.05
+    );
+
+}
+
+// ========================================
+// 10. UPDATE BUTTON STATUS
+// ========================================
+
+function updateButtons() {
+
+    const ready = temperatureData.length > 0;
+
+    playButton.disabled = !ready || isPlaying;
+
+    pauseButton.disabled = !isPlaying;
+
+    stopButton.disabled =
+        !ready || (!isPlaying && currentIndex === 0);
+
+}
+
+
+// ========================================
+// START YEAR PLAYBACK TIMER
+// ========================================
+
+function startYearTimer() {
+
+    // Remove any previous timer
+
+    clearInterval(timer);
+
+
+    // Start a new timer using selected speed
+
+    timer = setInterval(() => {
+
+        if (
+            currentIndex >=
+            temperatureData.length - 1
+        ) {
+
+            finishPlayback();
+
+            return;
+
+        }
+
+
+        const previousIndex = currentIndex;
+
+        currentIndex++;
+
+        updateDisplay();
+
+
+        // Play additional temperature sound
+
+        playTrendAccent(
+            previousIndex,
+            currentIndex
+        );
+
+
+    }, yearInterval);
+
+}
+
+// ========================================
+// TEMPERATURE CHANGE SOUND ACCENT
+// ========================================
+
+function playTrendAccent(previousIndex, currentIndex) {
+
+    // Check whether accent sound is enabled
+
+    if (!trendAccentToggle.checked) return;
+
+
+    if (!audioContext || !gainNode) return;
+
+
+    // Get previous and current temperature records
+
+    const previous =
+        temperatureData[previousIndex];
+
+    const current =
+        temperatureData[currentIndex];
+
+
+    // Calculate annual temperature change
+
+    const difference =
+        current.anomaly - previous.anomaly;
+
+
+    // Ignore extremely small changes
+
+    if (Math.abs(difference) < 0.01) return;
+
+
+    // Prepare an additional oscillator
+
+    const accentOscillator =
+        audioContext.createOscillator();
+
+    const accentGain =
+        audioContext.createGain();
+
+
+    const now = audioContext.currentTime;
+
+
+    // Determine direction and magnitude
+
+    const magnitude = Math.min(
+        Math.abs(difference) / 0.15,
+        1
+    );
+
+
+    let accentFrequency;
+
+
+    if (difference > 0) {
+
+        // Higher accent when anomaly increases
+
+        accentFrequency =
+            660 + (magnitude * 220);
+
+    } else {
+
+        // Lower accent when anomaly decreases
+
+        accentFrequency =
+            360 - (magnitude * 80);
+
+    }
+
+
+    // Larger changes create longer accents
+
+    const duration =
+        0.15 + (magnitude * 0.25);
+
+
+    accentOscillator.type = getSoundStyle();
+
+    accentOscillator.frequency.setValueAtTime(
+        accentFrequency,
+        now
+    );
+
+
+    // Smoothly start and stop the accent
+
+    accentGain.gain.setValueAtTime(
+        0.0001,
+        now
+    );
+
+    accentGain.gain.linearRampToValueAtTime(
+        0.8,
+        now + 0.02
+    );
+
+    accentGain.gain.setValueAtTime(
+        0.8,
+        now + duration * 0.5
+    );
+
+    accentGain.gain.linearRampToValueAtTime(
+        0.0001,
+        now + duration
+    );
+
+
+    // Connect to the analyser and master volume
+
+    accentOscillator.connect(accentGain);
+
+    accentGain.connect(analyser);
+
+
+    // Play the accent
+
+    accentOscillator.start(now);
+
+    accentOscillator.stop(now + duration + 0.02);
+
+}
+
+// ========================================
+// START YEAR PLAYBACK TIMER
+// ========================================
+
+
+// ========================================
+// PLAYBACK SPEED CONTROL
+// ========================================
+
+playbackSpeedSelect.addEventListener(
+    "change",
+    function() {
+
+        yearInterval = Number(
+            playbackSpeedSelect.value
+        );
+
+
+        message.textContent =
+            "Playback speed changed.";
+
+
+        // Apply new speed immediately if playing
+
+        if (isPlaying) {
+
+            startYearTimer();
+
+        }
+
+    }
+);
+
+// ========================================
+// 11. PLAY TEMPERATURE TIMELINE
+// ========================================
+
+async function playTimeline() {
+
+    if (temperatureData.length === 0 || isPlaying) return;
+
+
+    if (currentIndex >= temperatureData.length - 1) {
+
+        currentIndex = 0;
+
+        updateDisplay();
+
+    }
+
+    try {
+
+        await startAudio();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Unable to start audio. Check browser support.";
+
+        return;
+
+    }
+
+    isPlaying = true;
+    updateSoundMonitor("Temperature", "Playing");
+
+    updateButtons();
+
+    message.textContent =
+        "Playing Earth's historical temperature data...";
+
+  startYearTimer();
+
+}
+
+// ========================================
+// 12. PAUSE PLAYBACK
+// ========================================
+
+function pauseTimeline() {
+
+    if (!isPlaying) return;
+
+    clearInterval(timer);
+
+    timer = null;
+
+    isPlaying = false;
+    updateSoundMonitor("Temperature", "Paused");
+
+    fadeAudio();
+
+    updateButtons();
+
+    message.textContent =
+        "Paused at year " + yearDisplay.textContent;
+
+}
+
+// ========================================
+// 13. FINISH PLAYBACK
+// ========================================
+
+function finishPlayback() {
+
+    clearInterval(timer);
+
+    timer = null;
+
+    isPlaying = false;
+    updateSoundMonitor("Temperature", "Completed");
+
+    fadeAudio();
+
+    updateButtons();
+
+    message.textContent =
+        "Playback completed! All years explored.";
+
+}
+
+// ========================================
+// 14. STOP AND RESET
+// ========================================
+
+function stopTimeline() {
+
+    clearInterval(timer);
+
+    timer = null;
+
+    isPlaying = false;
+    updateSoundMonitor("Temperature", "Stopped");
+
+    fadeAudio();
+
+    currentIndex = 0;
+
+    updateDisplay();
+
+    updateButtons();
+
+    message.textContent =
+        "Playback stopped. Ready to begin again.";
+
+}
+
+// ========================================
+// 15. SLIDER INTERACTION
+// ========================================
+
+yearSlider.addEventListener("input", () => {
+
+    currentIndex = Number(yearSlider.value);
+
+    updateDisplay();
+
+    message.textContent =
+        "Selected year: " + yearDisplay.textContent;
+
+});
+
+// ========================================
+// 16. BUTTON EVENTS
+// ========================================
+
+playButton.addEventListener(
+    "click",
+    playTimeline
+);
+
+pauseButton.addEventListener(
+    "click",
+    pauseTimeline
+);
+
+stopButton.addEventListener(
+    "click",
+    stopTimeline
+);
+// ========================================
+// CHANGE SOUND WAVEFORM
+// ========================================
+
+waveTypeSelect.addEventListener("change", function() {
+
+    const selectedWave = waveTypeSelect.value;
+
+    // Change sound immediately if audio exists
+
+    if (oscillator) {
+
+        oscillator.type = selectedWave;
+
+    }
+
+    message.textContent =
+        "Sound style changed to " + selectedWave + " wave.";
+
+});
+
+// ========================================
+// 17. DRAW AUDIO WAVEFORM
+// ========================================
+
+function drawWaveform() {
+
+    requestAnimationFrame(drawWaveform);
+
+    const width = waveCanvas.width;
+
+    const height = waveCanvas.height;
+
+    waveCtx.clearRect(0, 0, width, height);
+
+    waveCtx.beginPath();
+
+    waveCtx.strokeStyle = "#72c8ff";
+
+    waveCtx.lineWidth = 3;
+
+    if (analyser && waveformData && isPlaying) {
+
+        analyser.getByteTimeDomainData(waveformData);
+
+        const sliceWidth =
+            width / waveformData.length;
+
+        let x = 0;
+
+        for (let i = 0; i < waveformData.length; i++) {
+
+            const value = waveformData[i] / 128;
+
+            const y = value * height / 2;
+
+            if (i === 0) {
+                waveCtx.moveTo(x, y);
+            } else {
+                waveCtx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
+
+        }
+
+    } else {
+
+        waveCtx.moveTo(0, height / 2);
+
+        waveCtx.lineTo(width, height / 2);
+
+    }
+
+    waveCtx.stroke();
+
+}
+
+// ========================================
+// 18. START APPLICATION
+// ========================================
+
+loadNASAData();
+
+drawWaveform();
+
+// ========================================
+// RAINFALL DATA VARIABLES
+// ========================================
+
+const rainDateDisplay =
+    document.getElementById("rainDate");
+
+const rainAmountDisplay =
+    document.getElementById("rainAmount");
+
+const rainPulseDisplay =
+    document.getElementById("rainPulseCount");
+
+const rainMeterBar =
+    document.getElementById("rainMeterBar");
+
+const rainSlider =
+    document.getElementById("rainSlider");
+
+const loadRainButton =
+    document.getElementById("loadRainButton");
+
+const playRainButton =
+    document.getElementById("playRainButton");
+
+const pauseRainButton =
+    document.getElementById("pauseRainButton");
+
+const stopRainButton =
+    document.getElementById("stopRainButton");
+
+const rainStatus =
+    document.getElementById("rainStatus");
+
+
+// NASA POWER sample location: Kuching area
+
+const RAIN_LATITUDE = 1.55;
+
+const RAIN_LONGITUDE = 110.35;
+
+
+// Rainfall records
+
+let rainfallData = [];
+
+let rainCurrentIndex = 0;
+
+let rainTimer = null;
+
+let isRainPlaying = false;
+
+
+// Separate audio system for rainfall
+
+let rainAudioContext = null;
+
+
+// One simulated day every 0.5 seconds
+
+// Speed, sound style and volume come from Advanced Sound Settings
+function getSoundInterval() { return Number(playbackSpeedSelect.value) || 500; }
+function getSoundStyle() { return waveTypeSelect.value || "sine"; }
+function getVolumeScale() { return Number(volumeSlider.value) / 45; }
+
+// ========================================
+// LOAD NASA POWER RAINFALL DATA
+// ========================================
+
+async function loadRainfallData() {
+
+    loadRainButton.disabled = true;
+
+    rainStatus.textContent =
+        "Connecting to NASA POWER...";
+
+
+    try {
+
+        const apiURL =
+            "https://power.larc.nasa.gov/api/temporal/daily/point";
+
+
+        // Prepare NASA API parameters
+
+        const parameters = new URLSearchParams({
+
+            parameters: "PRECTOTCORR",
+
+            community: "AG",
+
+            longitude: RAIN_LONGITUDE,
+
+            latitude: RAIN_LATITUDE,
+
+            start: "20250101",
+
+            end: "20251231",
+
+            format: "JSON",
+
+            "time-standard": "UTC"
+
+        });
+
+
+        // Send request to NASA POWER
+
+        const response = await fetch(
+            apiURL + "?" + parameters.toString()
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "NASA API error: " + response.status
+            );
+
+        }
+
+
+        // Convert response into JavaScript data
+
+        const result = await response.json();
+
+
+        // Extract daily precipitation values
+
+        const rainfallValues =
+            result?.properties?.parameter?.PRECTOTCORR;
+
+
+        if (
+            !rainfallValues ||
+            typeof rainfallValues !== "object"
+        ) {
+
+            throw new Error(
+                "NASA rainfall information was not found."
+            );
+
+        }
+
+
+        // Prepare data for TerraTone
+
+        rainfallData = Object.entries(rainfallValues)
+
+            .map(([date, value]) => {
+
+                const amount = Number(value);
+
+                const validDate =
+                    /^\d{8}$/.test(date);
+
+                if (
+                    !validDate ||
+                    !Number.isFinite(amount) ||
+                    amount < 0 ||
+                    amount === -999
+                ) {
+
+                    return null;
+
+                }
+
+
+                // Convert YYYYMMDD into YYYY-MM-DD
+
+                const readableDate =
+                    date.substring(0, 4) + "-" +
+                    date.substring(4, 6) + "-" +
+                    date.substring(6, 8);
+
+
+                return {
+
+                    date: readableDate,
+
+                    amount: amount
+
+                };
+
+            })
+
+            .filter(record => record !== null);
+
+
+        // Arrange the dates chronologically
+
+        rainfallData.sort(
+            (a, b) => a.date.localeCompare(b.date)
+        );
+
+
+        if (rainfallData.length === 0) {
+
+            throw new Error(
+                "No valid rainfall records were returned."
+            );
+
+        }
+
+
+        // Configure rainfall slider
+
+        rainCurrentIndex = 0;
+
+        rainSlider.min = 0;
+
+        rainSlider.max = rainfallData.length - 1;
+
+        rainSlider.value = 0;
+
+        rainSlider.disabled = false;
+
+
+        // Display first rainfall record
+
+        updateRainDisplay();
+
+        updateRainButtons();
+
+
+        rainStatus.textContent =
+            "NASA POWER rainfall data loaded successfully! " +
+            rainfallData.length +
+            " daily records available.";
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        rainStatus.textContent =
+            "Unable to retrieve rainfall data. " +
+            error.message +
+            " Check your internet connection and console.";
+
+
+    }
+
+    finally {
+
+        loadRainButton.disabled = false;
+
+    }
+
+}
+
+// ========================================
+// DISPLAY SELECTED RAINFALL DATA
+// ========================================
+
+function updateRainDisplay() {
+
+    if (rainfallData.length === 0) return;
+
+
+    const record =
+        rainfallData[rainCurrentIndex];
+
+
+    // Display selected date
+
+    rainDateDisplay.textContent =
+        record.date;
+
+
+    // Display rainfall measurement
+
+    rainAmountDisplay.textContent =
+        record.amount.toFixed(1) + " mm/day";
+
+
+    // Calculate sound pulse count
+
+    const pulseCount =
+        calculateRainPulses(record.amount);
+
+
+    if (pulseCount === 0) {
+
+        rainPulseDisplay.textContent =
+            "Dry day: No sound pulses";
+
+    }
+
+    else {
+
+        rainPulseDisplay.textContent =
+            "Sound pulses: " + pulseCount;
+
+    }
+
+
+    // Update rainfall intensity meter
+
+    const percentage = Math.min(
+        record.amount / 50 * 100,
+        100
+    );
+
+
+    rainMeterBar.style.width =
+        percentage + "%";
+
+
+    // Update timeline
+
+    rainSlider.value = rainCurrentIndex;
+
+}
+
+// ========================================
+// CALCULATE RAINFALL SOUND PULSES
+// ========================================
+
+function calculateRainPulses(amount) {
+
+    // No sound for a dry day
+
+    if (amount < 0.1) {
+
+        return 0;
+
+    }
+
+
+    // One additional pulse for every 10 mm/day band
+
+    const pulses =
+        1 + Math.floor(amount / 10);
+
+
+    // Maximum of five pulses
+
+    return Math.min(pulses, 5);
+
+}
+
+// ========================================
+// GENERATE RAINFALL SOUND
+// ========================================
+
+function playRainSound(amount) {
+
+    if (!rainAudioContext) return;
+
+
+    // Determine number of sound pulses
+
+    const pulseCount =
+        calculateRainPulses(amount);
+
+
+    // No sound during dry days
+
+    if (pulseCount === 0) return;
+
+
+    // More rain = higher starting note (0 to 50 mm/day)
+
+    const rainBaseIndex =
+        Math.round(Math.min(amount / 50, 1) * 5);
+
+    updateSoundMonitor(
+        "Rainfall",
+        null,
+        EARTH_NOTES[rainBaseIndex]
+    );
+
+
+    const now =
+        rainAudioContext.currentTime;
+
+
+    // Generate short sounds
+
+    for (let i = 0; i < pulseCount; i++) {
+
+
+        const oscillator =
+            rainAudioContext.createOscillator();
+
+
+        const gain =
+            rainAudioContext.createGain();
+
+
+        // Each pulse steps up the musical scale
+
+        const frequency =
+            EARTH_NOTES[
+                Math.min(rainBaseIndex + i, EARTH_NOTES.length - 1)
+            ];
+
+
+        oscillator.type = getSoundStyle();
+
+        oscillator.frequency.setValueAtTime(
+            frequency,
+            now + (i * 0.09)
+        );
+
+
+        const start =
+            now + (i * 0.09);
+
+
+        // Smooth sound envelope
+
+        gain.gain.setValueAtTime(
+            0.0001,
+            start
+        );
+
+
+        gain.gain.linearRampToValueAtTime(
+            0.035 * getVolumeScale() + 0.0001,
+            start + 0.015
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            start + 0.10
+        );
+
+
+        // Connect sound to computer output
+
+        oscillator.connect(gain);
+
+        gain.connect(rainAudioContext.destination);
+
+
+        // Start and stop the sound
+
+        oscillator.start(start);
+
+        oscillator.stop(start + 0.12);
+
+    }
+
+}
+
+// ========================================
+// PLAY RAINFALL TIMELINE
+// ========================================
+
+async function playRainfall() {
+
+    if (
+        rainfallData.length === 0 ||
+        isRainPlaying
+    ) {
+
+        return;
+
+    }
+
+
+    // Restart if the timeline has finished
+
+    if (
+        rainCurrentIndex >=
+        rainfallData.length - 1
+    ) {
+
+        rainCurrentIndex = 0;
+
+    }
+
+
+    try {
+
+        // Create audio context after user interaction
+
+        if (!rainAudioContext) {
+
+            const AudioContextClass =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            if (!AudioContextClass) {
+                throw new Error(
+                    "Web Audio is not supported."
+                );
+            }
+
+            rainAudioContext =
+                new AudioContextClass();
+
+        }
+
+
+        await rainAudioContext.resume();
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        rainStatus.textContent =
+            "Unable to start rainfall audio.";
+
+        return;
+
+    }
+
+
+    isRainPlaying = true;
+    updateSoundMonitor("Rainfall", "Playing");
+
+
+    updateRainButtons();
+
+
+    rainStatus.textContent =
+        "Playing daily rainfall sonification...";
+
+
+    // Play the selected day's rainfall sound
+
+    playRainSound(
+        rainfallData[rainCurrentIndex].amount
+    );
+
+
+    // Progress through daily records
+
+    rainTimer = setInterval(() => {
+
+
+        if (
+            rainCurrentIndex >=
+            rainfallData.length - 1
+        ) {
+
+            finishRainfall();
+
+            return;
+
+        }
+
+
+        rainCurrentIndex++;
+
+
+        updateRainDisplay();
+
+
+        playRainSound(
+            rainfallData[rainCurrentIndex].amount
+        );
+
+
+    }, getSoundInterval());
+
+}
+
+function pauseRainfall() {
+
+    if (!isRainPlaying) return;
+
+
+    clearInterval(rainTimer);
+
+    rainTimer = null;
+
+    isRainPlaying = false;
+    updateSoundMonitor("Rainfall", "Paused");
+
+
+    updateRainButtons();
+
+
+    rainStatus.textContent =
+        "Rainfall playback paused at " +
+        rainfallData[rainCurrentIndex].date;
+
+}
+
+function stopRainfall() {
+
+    clearInterval(rainTimer);
+
+    rainTimer = null;
+
+    isRainPlaying = false;
+    updateSoundMonitor("Rainfall", "Stopped");
+
+    rainCurrentIndex = 0;
+
+
+    updateRainDisplay();
+
+    updateRainButtons();
+
+
+    rainStatus.textContent =
+        "Rainfall playback stopped.";
+
+}
+
+function finishRainfall() {
+
+    clearInterval(rainTimer);
+
+    rainTimer = null;
+
+    isRainPlaying = false;
+    updateSoundMonitor("Rainfall", "Completed");
+
+
+    updateRainButtons();
+
+
+    rainStatus.textContent =
+        "Rainfall playback completed!";
+
+}
+
+function updateRainButtons() {
+
+    const ready =
+        rainfallData.length > 0;
+
+
+    playRainButton.disabled =
+        !ready || isRainPlaying;
+
+
+    pauseRainButton.disabled =
+        !isRainPlaying;
+
+
+    stopRainButton.disabled =
+        !ready ||
+        (
+            !isRainPlaying &&
+            rainCurrentIndex === 0
+        );
+
+}
+
+// ========================================
+// RAINFALL USER INTERACTIONS
+// ========================================
+
+
+// Load NASA rainfall information
+
+loadRainButton.addEventListener(
+    "click",
+    loadRainfallData
+);
+
+
+// Play rainfall experience
+
+playRainButton.addEventListener(
+    "click",
+    playRainfall
+);
+
+
+// Pause rainfall experience
+
+pauseRainButton.addEventListener(
+    "click",
+    pauseRainfall
+);
+
+
+// Stop rainfall experience
+
+stopRainButton.addEventListener(
+    "click",
+    stopRainfall
+);
+
+
+// Select individual rainfall dates
+
+rainSlider.addEventListener("input", function() {
+
+    // Pause automatically when manually selecting a date
+
+    if (isRainPlaying) {
+
+        pauseRainfall();
+
+    }
+
+
+    rainCurrentIndex =
+        Number(rainSlider.value);
+
+
+    updateRainDisplay();
+
+    updateRainButtons();
+
+
+    rainStatus.textContent =
+        "Selected rainfall date: " +
+        rainfallData[rainCurrentIndex].date;
+
+});
+
+// ========================================
+// WIND DATA VARIABLES
+// ========================================
+
+const windDateDisplay =
+    document.getElementById("windDate");
+
+const windSpeedDisplay =
+    document.getElementById("windSpeed");
+
+const windIntensityDisplay =
+    document.getElementById("windIntensity");
+
+const windMeterBar =
+    document.getElementById("windMeterBar");
+
+const windSlider =
+    document.getElementById("windSlider");
+
+const loadWindButton =
+    document.getElementById("loadWindButton");
+
+const playWindButton =
+    document.getElementById("playWindButton");
+
+const pauseWindButton =
+    document.getElementById("pauseWindButton");
+
+const stopWindButton =
+    document.getElementById("stopWindButton");
+
+const windStatus =
+    document.getElementById("windStatus");
+
+
+// Same approximate location as rainfall
+
+const WIND_LATITUDE = 1.55;
+
+const WIND_LONGITUDE = 110.35;
+
+
+// Wind data storage
+
+let windData = [];
+
+let windCurrentIndex = 0;
+
+let windTimer = null;
+
+let isWindPlaying = false;
+
+
+// Independent wind audio system
+
+let windAudioContext = null;
+
+
+// One simulated day every 0.5 seconds
+
+
+// ========================================
+// LOAD NASA POWER WIND DATA
+// ========================================
+
+async function loadWindData() {
+
+    loadWindButton.disabled = true;
+
+    windStatus.textContent =
+        "Connecting to NASA POWER wind data...";
+
+
+    try {
+
+        // NASA POWER API address
+
+        const apiURL =
+            "https://power.larc.nasa.gov/api/temporal/daily/point";
+
+
+        // Prepare request parameters
+
+        const parameters = new URLSearchParams({
+
+            parameters: "WS10M",
+
+            community: "AG",
+
+            longitude: WIND_LONGITUDE,
+
+            latitude: WIND_LATITUDE,
+
+            start: "20250101",
+
+            end: "20251231",
+
+            format: "JSON",
+
+            "time-standard": "UTC"
+
+        });
+
+
+        // Request NASA information
+
+        const response = await fetch(
+            apiURL + "?" + parameters.toString()
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "NASA POWER HTTP error: " +
+                response.status
+            );
+
+        }
+
+
+        // Convert the response into JSON
+
+        const result = await response.json();
+
+
+        // Retrieve WS10M information
+
+        const values =
+            result?.properties?.parameter?.WS10M;
+
+
+        if (!values) {
+
+            throw new Error(
+                "WS10M wind data not found."
+            );
+
+        }
+
+
+        // Convert the daily records into an array
+
+        windData = Object.entries(values)
+
+            .map(([date, rawValue]) => {
+
+                const speed = Number(rawValue);
+
+                // Ignore invalid dates and missing data
+
+                if (
+                    !/^\d{8}$/.test(date) ||
+                    !Number.isFinite(speed) ||
+                    speed < 0
+                ) {
+
+                    return null;
+
+                }
+
+
+                const readableDate =
+
+                    date.substring(0, 4) + "-" +
+
+                    date.substring(4, 6) + "-" +
+
+                    date.substring(6, 8);
+
+
+                return {
+
+                    date: readableDate,
+
+                    speed: speed
+
+                };
+
+            })
+
+            .filter(record => record !== null);
+
+
+        // Arrange records chronologically
+
+        windData.sort(
+            (a, b) =>
+                a.date.localeCompare(b.date)
+        );
+
+
+        if (windData.length === 0) {
+
+            throw new Error(
+                "No valid wind records returned."
+            );
+
+        }
+
+
+        // Configure timeline
+
+        windCurrentIndex = 0;
+
+        windSlider.min = 0;
+
+        windSlider.max = windData.length - 1;
+
+        windSlider.value = 0;
+
+        windSlider.disabled = false;
+
+
+        updateWindDisplay();
+
+        updateWindButtons();
+
+
+        windStatus.textContent =
+
+            "NASA POWER wind data loaded successfully! " +
+
+            windData.length +
+
+            " daily records available.";
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        windStatus.textContent =
+
+            "Unable to load wind data. " +
+
+            error.message;
+
+    }
+
+    finally {
+
+        loadWindButton.disabled = false;
+
+    }
+
+}
+
+// ========================================
+// UPDATE WIND DISPLAY
+// ========================================
+
+function updateWindDisplay() {
+
+    if (windData.length === 0) return;
+
+
+    const record =
+        windData[windCurrentIndex];
+
+
+    const speed = record.speed;
+
+
+    // Display selected date
+
+    windDateDisplay.textContent =
+        record.date;
+
+
+    // Display wind speed
+
+    windSpeedDisplay.textContent =
+        speed.toFixed(2) + " m/s";
+
+
+    // Calculate wind sound intensity
+
+    const intensity =
+        Math.min(speed / 15, 1) * 100;
+
+
+    windIntensityDisplay.textContent =
+
+        "Sound Intensity: " +
+
+        intensity.toFixed(0) + "%";
+
+
+    // Update the meter
+
+    windMeterBar.style.width =
+        intensity + "%";
+
+
+    // Update slider
+
+    windSlider.value =
+        windCurrentIndex;
+
+}
+
+// ========================================
+// GENERATE WIND SOUND
+// ========================================
+
+function playWindPulse(speed) {
+
+    if (!windAudioContext) return;
+
+
+    // No sound for very low wind speed
+
+    if (speed < 0.1) return;
+
+
+    // Convert wind speed into sound intensity
+
+    const normalised = Math.min(
+        speed / 15,
+        1
+    );
+
+
+    // Stronger wind = higher musical note
+
+    const windNote =
+        EARTH_NOTES[Math.round(normalised * 10)];
+
+    updateSoundMonitor("Wind Speed", null, windNote);
+
+
+    // Set safe audio amplitude
+
+    const peakGain =
+        (0.005 + (normalised * 0.04)) * getVolumeScale() + 0.0001;
+
+
+    const now =
+        windAudioContext.currentTime;
+
+
+    // Create a new sound oscillator
+
+    const oscillator =
+        windAudioContext.createOscillator();
+
+
+    const gainNode =
+        windAudioContext.createGain();
+
+
+    // Use a smooth tone
+
+    oscillator.type = getSoundStyle();
+
+    oscillator.frequency.setValueAtTime(
+        windNote,
+        now
+    );
+
+
+    // Smoothly increase the sound
+
+    gainNode.gain.setValueAtTime(
+        0.0001,
+        now
+    );
+
+    gainNode.gain.linearRampToValueAtTime(
+        peakGain,
+        now + 0.03
+    );
+
+
+    // Slowly reduce the sound
+
+    gainNode.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + 0.20
+    );
+
+
+    // Connect to the separate wind audio output
+
+    oscillator.connect(gainNode);
+
+    gainNode.connect(
+        windAudioContext.destination
+    );
+
+
+    // Play sound
+
+    oscillator.start(now);
+
+    oscillator.stop(now + 0.22);
+
+}
+
+// ========================================
+// PLAY WIND TIMELINE
+// ========================================
+
+
+/* ========================================
+   WIND PLAYBACK CONTROLS - FIXED VERSION
+======================================== */
+
+
+// 1. PLAY WIND TIMELINE
+
+async function playWindTimeline() {
+
+    // Prevent playback if data is unavailable
+    // or playback is already running
+
+    if (
+        windData.length === 0 ||
+        isWindPlaying
+    ) {
+        return;
+    }
+
+
+    // Restart if the previous playback finished
+
+    if (
+        windCurrentIndex >= windData.length - 1
+    ) {
+
+        windCurrentIndex = 0;
+
+    }
+
+
+    try {
+
+        // Create separate wind audio context
+
+        if (!windAudioContext) {
+
+            const AudioContextClass =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            if (!AudioContextClass) {
+
+                throw new Error(
+                    "Web Audio is not supported."
+                );
+
+            }
+
+            windAudioContext =
+                new AudioContextClass();
+
+        }
+
+
+        // Activate audio
+
+        await windAudioContext.resume();
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        windStatus.textContent =
+            "Unable to start wind audio.";
+
+        return;
+
+    }
+
+
+    // Update playback status
+
+    isWindPlaying = true;
+    updateSoundMonitor("Wind Speed", "Playing");
+
+    updateWindButtons();
+
+    windStatus.textContent =
+        "Playing daily wind speed sonification...";
+
+
+    // Play the current wind sound
+
+    updateWindDisplay();
+
+    playWindPulse(
+        windData[windCurrentIndex].speed
+    );
+
+
+    // Clear any previous timer
+
+    clearInterval(windTimer);
+
+
+    // Start daily playback
+
+    windTimer = setInterval(function() {
+
+
+        // Check whether the final record was reached
+
+        if (
+            windCurrentIndex >= windData.length - 1
+        ) {
+
+            finishWindPlayback();
+
+            return;
+
+        }
+
+
+        // Move to the next date
+
+        windCurrentIndex++;
+
+
+        // Update the dashboard
+
+        updateWindDisplay();
+
+
+        // Generate corresponding wind sound
+
+        playWindPulse(
+            windData[windCurrentIndex].speed
+        );
+
+
+    }, getSoundInterval());
+
+}
+
+// 2. PAUSE WIND TIMELINE
+
+function pauseWindPlayback() {
+
+    if (!isWindPlaying) return;
+
+
+    // Stop the timer immediately
+
+    clearInterval(windTimer);
+
+    windTimer = null;
+
+
+    // Change playback state
+
+    isWindPlaying = false;
+    updateSoundMonitor("Wind Speed", "Paused");
+
+
+    // Update button availability
+
+    updateWindButtons();
+
+
+    windStatus.textContent =
+        "Wind playback paused at " +
+        windData[windCurrentIndex].date;
+
+}
+
+// 3. STOP WIND TIMELINE
+
+function stopWindPlayback() {
+
+    // Stop timer
+
+    clearInterval(windTimer);
+
+    windTimer = null;
+
+
+    // Reset playback status
+
+    isWindPlaying = false;
+    updateSoundMonitor("Wind Speed", "Stopped");
+
+
+    // Return to the first available date
+
+    windCurrentIndex = 0;
+
+
+    // Update dashboard
+
+    updateWindDisplay();
+
+
+    // Update buttons
+
+    updateWindButtons();
+
+
+    windStatus.textContent =
+        "Wind playback stopped. Timeline reset to the beginning.";
+
+}
+
+// 4. FINISH WIND PLAYBACK
+
+function finishWindPlayback() {
+
+    clearInterval(windTimer);
+
+    windTimer = null;
+
+    isWindPlaying = false;
+    updateSoundMonitor("Wind Speed", "Completed");
+
+
+    updateWindButtons();
+
+
+    windStatus.textContent =
+        "Wind playback completed! All available dates explored.";
+
+}
+
+
+// 5. UPDATE WIND BUTTON STATUS
+
+function updateWindButtons() {
+
+    const ready = windData.length > 0;
+
+
+    // Play is available when playback is stopped
+
+    playWindButton.disabled =
+        !ready || isWindPlaying;
+
+
+    // Pause is available only during playback
+
+    pauseWindButton.disabled =
+        !ready || !isWindPlaying;
+
+
+    // Stop remains available whenever data is loaded
+
+    stopWindButton.disabled =
+        !ready;
+
+}
+
+
+// ========================================
+// WIND BUTTON EVENT LISTENERS
+// ========================================
+
+
+// LOAD WIND DATA
+
+loadWindButton.addEventListener(
+    "click",
+    loadWindData
+);
+
+
+// PLAY WIND
+
+playWindButton.addEventListener(
+    "click",
+    playWindTimeline
+);
+
+
+// PAUSE WIND
+
+pauseWindButton.addEventListener(
+    "click",
+    pauseWindPlayback
+);
+
+
+// STOP WIND
+
+stopWindButton.addEventListener(
+    "click",
+    stopWindPlayback
+);
+
+
+// MANUAL WIND DATE SELECTION
+
+windSlider.addEventListener(
+    "input",
+    function() {
+
+
+        // Pause automatic playback first
+
+        if (isWindPlaying) {
+
+            pauseWindPlayback();
+
+        }
+
+
+        // Update selected date
+
+        windCurrentIndex =
+            Number(windSlider.value);
+
+
+        // Update displayed data
+
+        updateWindDisplay();
+
+
+        // Update button status
+
+        updateWindButtons();
+
+
+        windStatus.textContent =
+            "Selected date: " +
+            windData[windCurrentIndex].date;
+
+    }
+);
+function updateSoundMonitor(dataset, status, frequency) {
+    const d = document.getElementById("activeDataset");
+    const s = document.getElementById("monitorStatus");
+    const f = document.getElementById("monitorFrequency");
+    if (d && dataset) d.textContent = dataset;
+    if (s && status) s.textContent = status;
+    if (f && frequency !== undefined && isFinite(frequency)) {
+        f.textContent = Number(frequency).toFixed(1) + " Hz";
+    }
+}
+
+// ========================================
+// EARTH VIDEO SONIFICATION (colour -> sound)
+// ========================================
+
+const eicVideo = document.getElementById("eicVideo");
+const eicFileInput = document.getElementById("eicVideoFile");
+const eicPlayButton = document.getElementById("eicPlayButton");
+const eicStopButton = document.getElementById("eicStopButton");
+const eicPauseButton = document.getElementById("eicPauseButton");
+const eicStatus = document.getElementById("eicVideoStatus");
+const eicReadout = document.getElementById("eicColourReadout");
+
+// A tiny hidden canvas used to "look" at the video
+const eicCanvas = document.createElement("canvas");
+eicCanvas.width = 64;
+eicCanvas.height = 36;
+const eicDraw = eicCanvas.getContext("2d", { willReadFrequently: true });
+
+let eicObjectUrl = null;
+let eicAudio = null;      // audio context
+let eicLead = null;       // main note
+let eicHarmony = null;    // second, higher note
+let eicLeadGain = null;
+let eicHarmonyGain = null;
+let eicTimerId = null;
+
+function eicClamp(value, low, high) {
+    return Math.max(low, Math.min(high, value));
+}
+
+// Build the sound system once
+async function eicStartAudio() {
+
+    const AudioClass = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioClass) {
+        throw new Error("Web Audio is not supported.");
+    }
+
+    if (!eicAudio) {
+
+        eicAudio = new AudioClass();
+
+        eicLead = eicAudio.createOscillator();
+        eicHarmony = eicAudio.createOscillator();
+        eicLeadGain = eicAudio.createGain();
+        eicHarmonyGain = eicAudio.createGain();
+
+        eicLead.type = getSoundStyle();
+        eicHarmony.type = getSoundStyle();
+
+        eicLeadGain.gain.value = 0;
+        eicHarmonyGain.gain.value = 0;
+
+        eicLead.connect(eicLeadGain);
+        eicHarmony.connect(eicHarmonyGain);
+        eicLeadGain.connect(eicAudio.destination);
+        eicHarmonyGain.connect(eicAudio.destination);
+
+        eicLead.start();
+        eicHarmony.start();
+    }
+
+    await eicAudio.resume();
+}
+
+// Fade the sound out
+function eicSilence() {
+
+    if (!eicAudio) return;
+
+    const now = eicAudio.currentTime;
+
+    eicLeadGain.gain.setTargetAtTime(0, now, 0.05);
+    eicHarmonyGain.gain.setTargetAtTime(0, now, 0.05);
+}
+
+// Look at one video frame and turn its colours into sound
+function eicAnalyseFrame() {
+
+    if (eicVideo.paused || eicVideo.ended || !eicAudio) return;
+
+    let pixels;
+
+    try {
+        eicDraw.drawImage(eicVideo, 0, 0, 64, 36);
+        pixels = eicDraw.getImageData(0, 0, 64, 36).data;
+    }
+    catch (error) {
+        console.error(error);
+        eicStatus.textContent =
+            "The browser blocked reading this video. " +
+            "Please choose the video with the file button above.";
+        return;
+    }
+
+    let earthPixels = 0;
+    let warmSum = 0;
+    let brightSum = 0;
+    let redPixels = 0;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+
+        const brightness = (r + g + b) / 3;
+
+        // Ignore the black background of space
+        if (brightness < 30) continue;
+
+        earthPixels++;
+        warmSum += (r - b) / 255;
+        brightSum += brightness / 255;
+
+        if (r > 100 && r - b > 40) redPixels++;
+    }
+
+    const total = pixels.length / 4;
+    const coverage = earthPixels / total;
+    const now = eicAudio.currentTime;
+
+    // Almost all black = silence
+    if (coverage < 0.03) {
+
+        eicSilence();
+
+        eicReadout.textContent =
+            "Mostly dark picture: silence.";
+
+        return;
+    }
+
+    const warmth = warmSum / earthPixels;
+    const brightness = brightSum / earthPixels;
+    const redShare = redPixels / earthPixels;
+
+    // Cool (blue) = low note, warm (red) = high note
+    const position = eicClamp((warmth + 0.4) / 0.8, 0, 1);
+    const noteIndex = Math.round(position * 8);
+
+    const leadNote = EARTH_NOTES[noteIndex];
+    const harmonyNote = EARTH_NOTES[noteIndex + 2];
+
+    // Brighter picture = louder sound
+    const loudness =
+        (0.2 + 0.8 * brightness) * Math.min(1, coverage * 2);
+
+    const volume = getVolumeGain();
+
+    eicLead.frequency.setTargetAtTime(leadNote, now, 0.04);
+    eicHarmony.frequency.setTargetAtTime(harmonyNote, now, 0.04);
+
+    eicLeadGain.gain.setTargetAtTime(volume * loudness, now, 0.08);
+    eicHarmonyGain.gain.setTargetAtTime(
+        volume * loudness * redShare * 0.8,
+        now,
+        0.08
+    );
+
+    updateSoundMonitor("Earth Video", "Playing", leadNote);
+
+    eicReadout.textContent =
+        "Colour reading: " +
+        (warmth >= 0 ? "warm" : "cool") +
+        " (" + Math.round(position * 100) + "% toward warm), " +
+        "brightness " + Math.round(brightness * 100) + "%, " +
+        "note " + Math.round(leadNote) + " Hz.";
+}
+
+function eicStopTimer() {
+    if (eicTimerId) {
+        clearInterval(eicTimerId);
+        eicTimerId = null;
+    }
+}
+
+// When a video is chosen
+eicFileInput.addEventListener("change", () => {
+
+    const file = eicFileInput.files[0];
+
+    if (!file) return;
+
+    eicVideo.pause();
+    eicStopTimer();
+    eicSilence();
+
+    if (eicObjectUrl) URL.revokeObjectURL(eicObjectUrl);
+
+    eicObjectUrl = URL.createObjectURL(file);
+    eicVideo.src = eicObjectUrl;
+    eicVideo.load();
+
+    eicPlayButton.disabled = false;
+    eicPauseButton.disabled = false;
+    eicStopButton.disabled = false;
+
+    eicStatus.textContent =
+        "Video loaded: " + file.name + ". Press Play.";
+
+    updateSoundMonitor("Earth Video", "Ready");
+});
+
+// When the video starts (from our button or its own controls)
+eicVideo.addEventListener("play", async () => {
+
+    eicVideo.playbackRate = 500 / getSoundInterval();
+
+    try {
+        await eicStartAudio();
+    }
+    catch (error) {
+        console.error(error);
+        eicStatus.textContent =
+            "Unable to start audio. Check browser support.";
+        return;
+    }
+
+    eicStopTimer();
+    eicTimerId = setInterval(eicAnalyseFrame, 200);
+
+    eicStatus.textContent =
+        "Playing: the sound follows the colours of the video.";
+
+    updateSoundMonitor("Earth Video", "Playing");
+});
+
+eicVideo.addEventListener("pause", () => {
+
+    if (eicVideo.ended) return;
+
+    eicStopTimer();
+    eicSilence();
+
+    eicStatus.textContent = "Paused.";
+    updateSoundMonitor("Earth Video", "Paused");
+});
+
+eicVideo.addEventListener("ended", () => {
+
+    eicStopTimer();
+    eicSilence();
+
+    eicStatus.textContent = "Video finished.";
+    updateSoundMonitor("Earth Video", "Completed");
+});
+
+eicVideo.addEventListener("error", () => {
+
+    eicStatus.textContent =
+        "This video could not be played. Try an MP4 file.";
+});
+
+eicPlayButton.addEventListener("click", () => {
+
+    eicVideo.play().catch((error) => {
+        console.error(error);
+        eicStatus.textContent =
+            "Unable to play this video. Try an MP4 file.";
+    });
+});
+
+eicPauseButton.addEventListener("click", () => {
+    eicVideo.pause();
+});
+
+waveTypeSelect.addEventListener("change", () => {
+    if (eicLead) eicLead.type = getSoundStyle();
+    if (eicHarmony) eicHarmony.type = getSoundStyle();
+});
+
+playbackSpeedSelect.addEventListener("change", () => {
+    eicVideo.playbackRate = 500 / getSoundInterval();
+});
+
+eicStopButton.addEventListener("click", () => {
+
+    eicVideo.pause();
+    eicVideo.currentTime = 0;
+
+    eicStopTimer();
+    eicSilence();
+
+    eicReadout.textContent =
+        "Colour reading will appear here while the video plays.";
+
+    eicStatus.textContent = "Stopped.";
+    updateSoundMonitor("Earth Video", "Stopped");
+});
+
+// ========================================
+// FLOATING ACCESSIBILITY BUTTON (open / close the panel)
+// ========================================
+
+const accessToggle = document.getElementById("accessToggle");
+const accessPanel = document.getElementById("accessibilityPanel");
+const accessClose = document.getElementById("accessClose");
+const accessHeading = document.getElementById("accessibilityHeading");
+
+function setAccessPanel(open) {
+
+    accessPanel.hidden = !open;
+    accessToggle.hidden = open;
+
+    accessToggle.setAttribute("aria-expanded", String(open));
+
+    if (open) {
+        accessHeading.focus();
+    }
+    else {
+        accessToggle.focus();
+    }
+}
+
+accessToggle.addEventListener("click", () => setAccessPanel(true));
+
+accessClose.addEventListener("click", () => setAccessPanel(false));
+
+// The Escape key also closes the panel
+document.addEventListener("keydown", (event) => {
+
+    if (event.key === "Escape" && !accessPanel.hidden) {
+        setAccessPanel(false);
+    }
+});
+
+// Redraw the trend graph whenever its panel changes size
+if (window.ResizeObserver) {
+    new ResizeObserver(function() {
+        if (temperatureData.length > 0) {
+            drawTrendChart(currentIndex);
+        }
+    }).observe(trendCanvas.parentElement);
+}
+</script>
+
+</body>
+</html>
